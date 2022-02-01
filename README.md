@@ -149,6 +149,9 @@ e.g
 
 <details>
   <summary>Change Log</summary>
+
+v0.1.2 -  
+Added input validation to allow for commenting.
   
 v0.10 -  
 Added Use inventory item on Game Object/NPC 

@@ -17,6 +17,8 @@ import org.pf4j.Extension;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Extension
@@ -434,6 +436,11 @@ public class oneClickCustomPlugin extends Plugin{
         {
             for (String line : ConfigString.trim().split("\n"))
             {
+                Pattern pattern = Pattern.compile("^(\\d*,)*\\d*$"); //regex to allow for commenting, skips line if not correct format.
+                Matcher matcher = pattern.matcher(line);
+                boolean matchFound = matcher.find();
+                if (!matchFound) continue;
+
                 List<Integer> lineIDs = new ArrayList<>();
                 for(String id : line.split(",")) {
                     lineIDs.add(Integer.parseInt(id));
