@@ -86,12 +86,18 @@ public class oneClickCustomPlugin extends Plugin{
     @Subscribe
     private void onMenuEntryAdded(MenuEntryAdded event)
     {
+        if (config.oneClickType()!=oneClickCustomTypes.Use_Item_On_X)
+        {
+            return;
+        }
+
         if (event.getType()!= MenuAction.EXAMINE_ITEM.getId())
         {
             return;
         }
 
-        if (getItemOnNPCsHashMap().containsKey(event.getIdentifier()) || getItemOnGameObjectsHashMap().containsKey(event.getIdentifier()))
+        if ((getItemOnNPCsHashMap().size()!=0 && getItemOnNPCsHashMap().containsKey(event.getIdentifier()))
+                ||(getItemOnGameObjectsHashMap().size()!=0 && getItemOnGameObjectsHashMap().containsKey(event.getIdentifier())))
         {
             client.insertMenuItem(
                     "One Click Custom",
@@ -412,19 +418,11 @@ public class oneClickCustomPlugin extends Plugin{
 
     private HashMap<Integer, List<Integer>> getItemOnGameObjectsHashMap()
     {
-        if (config.itemOnGameObjectString().trim().isEmpty())
-        {
-            return null;
-        }
         return parseConfigString(config.itemOnGameObjectString());
     }
 
     private HashMap<Integer, List<Integer>> getItemOnNPCsHashMap()
     {
-        if (config.itemOnNpcString().trim().isEmpty())
-        {
-            return null;
-        }
         return parseConfigString(config.itemOnNpcString());
     }
 
@@ -432,15 +430,18 @@ public class oneClickCustomPlugin extends Plugin{
     {
         HashMap<Integer, List<Integer>> IDs = new HashMap<>();
 
-        for (String line : ConfigString.trim().split("\n"))
+        if (!ConfigString.trim().isEmpty())
         {
-            List<Integer> lineIDs = new ArrayList<>();
-            for(String id : line.split(",")) {
-                lineIDs.add(Integer.parseInt(id));
+            for (String line : ConfigString.trim().split("\n"))
+            {
+                List<Integer> lineIDs = new ArrayList<>();
+                for(String id : line.split(",")) {
+                    lineIDs.add(Integer.parseInt(id));
+                }
+                Integer key = lineIDs.get(0);
+                List<Integer> values = lineIDs.subList(1, lineIDs.size());
+                IDs.put(key,values);
             }
-            Integer key = lineIDs.get(0);
-            List<Integer> values = lineIDs.subList(1, lineIDs.size());
-            IDs.put(key,values);
         }
         return IDs;
     }
