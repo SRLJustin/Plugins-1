@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 @Extension
 @PluginDescriptor(
-	name = "CoxRaidScouter",
+	name = "Cox Raid Scouter",
 	description = "Requires Chambers Xeric Plugin post raids to chatbox toggle to be on.",
 	tags = {"cox", "raid", "scouter"}
 )
