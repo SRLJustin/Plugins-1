@@ -86,6 +86,15 @@ release
 ### One Click Aerial Fishing
 Molch Aerial fishing, will cut fish if you have a knife in your invent else drops fish.
 
+<details>
+  <summary>Change Log</summary>    
+v0.02 -  
+Modify drop to be after catching 1 fish, can catch fish a lot more efficiently now as they can be dropped while the bird is gathering more   
+
+v0.01 -  
+release   
+</details>
+
 ### One Click Amethyst
 Mines Amethyst and cuts into products. 
 

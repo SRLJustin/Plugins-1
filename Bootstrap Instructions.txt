@@ -3,6 +3,7 @@ Update plugin version
 Reload gradle
 Build plugins
 Delete contents of plugins.json
+Delete contents of release folder
 Bootstrap
 Commit 
 Push

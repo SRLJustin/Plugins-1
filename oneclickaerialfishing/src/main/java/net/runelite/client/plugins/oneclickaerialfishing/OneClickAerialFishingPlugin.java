@@ -13,6 +13,8 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import org.pf4j.Extension;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -51,6 +53,11 @@ public class OneClickAerialFishingPlugin extends Plugin {
         {
             return;
         }
+
+        if (getTotalFishCount()==0)
+        {
+            shouldCut = false;
+        }
         String text = "<col=00ff00>One Click Aerial Fishing";
         this.client.insertMenuItem(text, "", MenuAction.UNKNOWN
                 .getId(), 0, 0, 0, true);
@@ -58,6 +65,17 @@ public class OneClickAerialFishingPlugin extends Plugin {
 
     private void handleClick(MenuOptionClicked event)
     {
+        if (getTotalFishCount()>0 && (getLastInventoryItem(KNIFE_ID)==null))
+        {
+            for (int fish:LIST_OF_FISH_IDS)
+            {
+                if (getLastInventoryItem(fish)!=null)
+                {
+                    event.setMenuEntry(dropFishMenuEntry(getLastInventoryItem(fish)));
+                    return;
+                }
+            }
+        }
         if (getEmptySlots()>0
                 && ((getLastInventoryItem(KING_WORM)!=null)||(getLastInventoryItem(FISH_CHUNKS)!=null)) //if bait exists
                 && !shouldCut)
@@ -75,11 +93,6 @@ public class OneClickAerialFishingPlugin extends Plugin {
         {
             if (getLastInventoryItem(fish)!=null)
             {
-                if (getLastInventoryItem(KNIFE_ID)==null)
-                {
-                    event.setMenuEntry(dropFishMenuEntry(getLastInventoryItem(fish)));
-                    return;
-                }
                 client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
                 client.setSelectedItemSlot(getLastInventoryItem(KNIFE_ID).getIndex());
                 client.setSelectedItemID(KNIFE_ID);
@@ -116,6 +129,29 @@ public class OneClickAerialFishingPlugin extends Plugin {
         } else {
             return -1;
         }
+    }
+
+    private int getTotalFishCount(){
+        Collection<WidgetItem> inventoryItems = getInventoryItems();
+        if (inventoryItems == null) {
+            return 0;
+        }
+        int count = 0;
+        for (WidgetItem inventoryItem : inventoryItems) {
+            if (LIST_OF_FISH_IDS.contains(inventoryItem.getId())) {
+                count += 1;
+            }
+        }
+        return count;
+    }
+
+    @Nullable
+    private Collection<WidgetItem> getInventoryItems() {
+        Widget inventory = client.getWidget(WidgetInfo.INVENTORY);
+        if (inventory == null) {
+            return null;
+        }
+        return new ArrayList<>(inventory.getWidgetItems());
     }
 
     private MenuEntry useKnifeOnFishMenuEntry(WidgetItem Fish){
