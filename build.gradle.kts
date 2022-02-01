@@ -54,14 +54,5 @@ subprojects {
             dirMode = 493
             fileMode = 420
         }
-
-        withType<Jar> {
-            doLast {
-                copy {
-                    from("./build/libs/")
-                    into("../release/")
-                }
-            }
-        }
     }
 }
