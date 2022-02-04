@@ -15,16 +15,17 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.rs.api.RSClient;
 import org.pf4j.Extension;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.Random;
 
 @Extension
 @PluginDescriptor(
         name = "One Click Bloods",
-        description = "Apparently gets stuck occasionally depending on how the map is loaded. Not 100% on this though as I haven't seen it myself.",
+        description = "Start at the runestone area, sometimes bugs out otherwise.",
         tags = {"one","click","bloods","oneclick"},
         enabledByDefault = false
 )
@@ -66,6 +67,22 @@ public class OneClickBloodsPlugin extends Plugin {
         return configManager.getConfig(OneClickBloodsConfig.class);
     }
 
+    public void walkTile() { //walks to a random point within the area visible of the blood altar
+        WorldPoint sw = new WorldPoint(1735,3844,0);
+        WorldPoint nw = new WorldPoint(1740,3856,0);
+        WorldArea worldArea = new WorldArea(sw,nw);
+        Random randomGenerator = new Random();
+        int index = randomGenerator.nextInt(worldArea.toWorldPointList().size());
+        WorldPoint randomPoint = worldArea.toWorldPointList().get(index);
+        int x = randomPoint.getX() - client.getBaseX();
+        int y = randomPoint.getY() - client.getBaseY();
+        RSClient rsClient = (RSClient) client;
+        rsClient.setSelectedSceneTileX(x);
+        rsClient.setSelectedSceneTileY(y);
+        rsClient.setViewportWalking(true);
+        rsClient.setCheckClick(false);
+    }
+
     @Subscribe
     private void onClientTick(ClientTick event) {
         if (client.getWidget(193,2)!=null)
@@ -81,10 +98,6 @@ public class OneClickBloodsPlugin extends Plugin {
         {
             return;
         }
-        if (SHOULD_RUN_TO_ALTAR && config.manuallyWalk() &! isWithinBloodAltarArea())
-        {
-            return;
-        }
         String text = "<col=00ff00>One Click Bloods";
         this.client.insertMenuItem(text, "", MenuAction.UNKNOWN
                 .getId(), 0, 0, 0, true);
@@ -92,6 +105,7 @@ public class OneClickBloodsPlugin extends Plugin {
 
     @Subscribe
     public void onMenuOptionClicked(MenuOptionClicked event) {
+
         if (event.getMenuOption().equals("<col=00ff00>One Click Bloods"))
         {
             handleClick(event);
@@ -133,8 +147,7 @@ public class OneClickBloodsPlugin extends Plugin {
             event.consume();
             return;
         }
-        if((client.getLocalPlayer().isMoving() || client.getLocalPlayer().getPoseAnimation() != client.getLocalPlayer().getIdlePoseAnimation())
-                &! (isWithinBloodAltarArea() && config.manuallyWalk())) //allows you to click the altar if manual walk is enabled as soon as you can see it
+        if((client.getLocalPlayer().isMoving() || client.getLocalPlayer().getPoseAnimation() != client.getLocalPlayer().getIdlePoseAnimation()))
         {
             event.consume();
             return;
@@ -157,7 +170,6 @@ public class OneClickBloodsPlugin extends Plugin {
 
         if (isWithinRunestoneArea())
         {
-
             if (getEmptySlots()>0)
             {
                 WidgetItem bloodEss= getInventoryItem(ItemID.BLOOD_ESSENCE);
@@ -198,12 +210,9 @@ public class OneClickBloodsPlugin extends Plugin {
                 return;
             }
 
-            if (!config.manuallyWalk() && SHOULD_RUN_TO_ALTAR)
+            if (SHOULD_RUN_TO_ALTAR)
             {
-                client.setSelectedItemWidget(WidgetInfo.INVENTORY.getId());
-                client.setSelectedItemSlot(getInventoryItem(CHISEL_ID).getIndex());
-                client.setSelectedItemID(CHISEL_ID);
-                event.setMenuEntry(useChiselOnRockSlideMES());
+                walkTile();
                 return;
             }
         }
@@ -424,11 +433,6 @@ public class OneClickBloodsPlugin extends Plugin {
                 .setParam0(param0).setParam1(param1).setForceLeftClick(forceLeftClick);
     }
 }
-
-/*TODO
-MAYBE ADD OPTION TO NOT ONE CLICK CHISEL OR  ONE CLICK USE CHISEL ON ROCKS
-ADD CONFIG OPTION FOR CONSUME CLICKS
- */
 
 
 
