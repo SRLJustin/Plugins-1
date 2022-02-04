@@ -113,7 +113,10 @@ release
 Initially requires the map to be loaded as a normal player would else it can get stuck. Currently uses a rather inelegant method of using a chisel on the cluster of rocks to get nearer to the altar, very open to suggestions on how to solve this as walking programatically seems very aids. SWIM has used for approx 100h without any detection.
 
 <details>
-  <summary>Change Log</summary>
+  <summary>Change Log</summary>  
+  
+v0.04 -  
+Added option to use pickaxe special attack and support for blood essence, credit Ethan Vann  
   
 v0.03 - 
 Updated Inventory Full check to be on clienttick instead of menuoptionclicked. Added option to manual walk towards the altar. 

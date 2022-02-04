@@ -157,8 +157,24 @@ public class OneClickBloodsPlugin extends Plugin {
 
         if (isWithinRunestoneArea())
         {
+
             if (getEmptySlots()>0)
             {
+                WidgetItem bloodEss= getInventoryItem(ItemID.BLOOD_ESSENCE);
+                if(bloodEss!=null) {
+                    WidgetItem activebloodEss = getInventoryItem(ItemID.BLOOD_ESSENCE_ACTIVE);
+                    if(activebloodEss==null){
+                        event.setMenuEntry(activateBloodEssenceMES(bloodEss.getIndex()));
+                        return;
+                    }
+                }
+                if(config.useSpec()) {
+                    if (client.getVar(VarPlayer.SPECIAL_ATTACK_PERCENT) == 1000) {
+                        event.setMenuEntry(specAtk());
+                        return;
+                    }
+                }
+
                 event.setMenuEntry(mineRunestone());
             }
             else
@@ -340,6 +356,25 @@ public class OneClickBloodsPlugin extends Plugin {
                 MenuAction.GAME_OBJECT_FIRST_OPTION,
                 getLocation(getGameObject(RUNESTONE_ID)).getX(),
                 getLocation(getGameObject(RUNESTONE_ID)).getY(),
+                false);
+    }
+
+    private MenuEntry specAtk(){
+        Widget specAtk = client.getWidget(WidgetInfo.MINIMAP_SPEC_CLICKBOX);
+        return createMenuEntry(
+                1,
+                MenuAction.CC_OP,
+                -1,
+                specAtk.getId(),
+                false);
+    }
+
+    private MenuEntry activateBloodEssenceMES(int slot){
+        return createMenuEntry(
+                ItemID.BLOOD_ESSENCE,
+                MenuAction.ITEM_FIRST_OPTION,
+                slot,
+                WidgetInfo.INVENTORY.getId(),
                 false);
     }
 

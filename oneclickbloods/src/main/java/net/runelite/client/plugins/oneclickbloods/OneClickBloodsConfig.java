@@ -19,7 +19,7 @@ public interface OneClickBloodsConfig extends Config
     }
 
     @ConfigItem(
-            position = 0,
+            position = 1,
             keyName = "manualwalk",
             name = "Manually Walk",
             description = "Disable this if you want to oneclick walk towards the altar, Disable with caution as it walks to the altar by using a chisel on the same rockslide every time."
@@ -28,4 +28,12 @@ public interface OneClickBloodsConfig extends Config
     {
         return false;
     }
+
+    @ConfigItem(
+            position = 2,
+            keyName = "useSpec",
+            name = "Use Special Attack",
+            description = "Uses special attack if its 100% before mining. Useful for things like dragon pickaxe"
+    )
+    default boolean useSpec(){return false;}
 }
