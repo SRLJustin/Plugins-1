@@ -84,7 +84,6 @@ public class oneClickCustomPlugin extends Plugin{
     {
         GroundItems.clear();
     }
-
     @Subscribe
     private void onMenuEntryAdded(MenuEntryAdded event)
     {
@@ -115,6 +114,7 @@ public class oneClickCustomPlugin extends Plugin{
     @Subscribe
     public void onMenuOptionClicked(MenuOptionClicked event)
     {
+
         if(event.getMenuOption().equals("<col=00ff00>One Click Custom"))
         {
             if((client.getLocalPlayer().getAnimation()!=-1|| client.getLocalPlayer().isMoving()) && config.consumeClick() && config.oneClickType()!=oneClickCustomTypes.Pickpocket)
@@ -131,14 +131,14 @@ public class oneClickCustomPlugin extends Plugin{
     }
 
     @Subscribe
-    private void onClientTick(ClientTick event)
+    private void onClientTick(ClientTick event) //fix this baloney
     {
         if (config.oneClickType()==oneClickCustomTypes.Use_Item_On_X)
         {
             return;
         }
 
-        if (config.oneClickType()==oneClickCustomTypes.Gather && getGameObject()==null)
+        if (config.oneClickType()==oneClickCustomTypes.Gather && getGameObject(getConfigIds())==null)
         {
             //System.out.println("oneclick set to gather, gameobject is null.");
             return;
@@ -150,7 +150,7 @@ public class oneClickCustomPlugin extends Plugin{
             return;
         }
 
-        if (getNpcObject()==null &!(config.oneClickType()==oneClickCustomTypes.Gather) &! (config.oneClickType() == oneClickCustomTypes.Pick_Up))
+        if (getNpc(getConfigIds())==null &!(config.oneClickType()==oneClickCustomTypes.Gather) &! (config.oneClickType() == oneClickCustomTypes.Pick_Up))
         {
             //System.out.println("npcobject check null");
             return;
@@ -195,11 +195,7 @@ public class oneClickCustomPlugin extends Plugin{
 
         if (getItemOnNPCsHashMap().get(event.getId())!=null)
         {
-            NPC nearestnpc = new NPCQuery()
-                    .idEquals(getItemOnNPCsHashMap().get(event.getId()))
-                    .result(client)
-                    .nearestTo(client.getLocalPlayer());
-
+            NPC nearestnpc = getNpc(getItemOnNPCsHashMap().get(event.getId()));
             if (nearestnpc!=null)
             {
                 event.setMenuEntry(createMenuEntry(nearestnpc.getIndex(),MenuAction.ITEM_USE_ON_NPC, getNPCLocation(nearestnpc).getX(), getNPCLocation(nearestnpc).getY(), false));
@@ -209,10 +205,7 @@ public class oneClickCustomPlugin extends Plugin{
 
         if (getItemOnGameObjectsHashMap().get(event.getId())!=null)
         {
-            GameObject nearestGameObject = new GameObjectQuery()
-                    .idEquals(getItemOnGameObjectsHashMap().get(event.getId()))
-                    .result(client)
-                    .nearestTo(client.getLocalPlayer());
+            GameObject nearestGameObject = getGameObject(getItemOnGameObjectsHashMap().get(event.getId()));
 
             if (nearestGameObject!=null)
             {
@@ -223,6 +216,57 @@ public class oneClickCustomPlugin extends Plugin{
 
     private MenuEntry setCustomMenuEntry()
     {
+        if (config.Bank()&&(config.oneClickType()==oneClickCustomTypes.Fish ||
+                            config.oneClickType()==oneClickCustomTypes.Gather||
+                            config.oneClickType()==oneClickCustomTypes.Pickpocket||
+                            config.oneClickType()==oneClickCustomTypes.Pick_Up))
+        {
+            if (getEmptySlots()==0)
+            {
+                if (depositBoxOpen())
+                { //deposit all
+                    return createMenuEntry(1, MenuAction.CC_OP, -1, 12582916, false);
+                }
+                if (bankOpen())
+                { //deposit all
+                    return createMenuEntry(1, MenuAction.CC_OP, -1, WidgetInfo.BANK_DEPOSIT_INVENTORY.getId(), false);
+                }
+
+
+                if (bankVisible()) {
+                    if (config.bankType() == oneClickCustomBankTypes.Booth) {
+                        GameObject gameObject = getGameObject(config.bankID());
+                        return createMenuEntry(
+                                gameObject.getId(),
+                                MenuAction.GAME_OBJECT_SECOND_OPTION,
+                                getLocation(gameObject).getX(),
+                                getLocation(gameObject).getY(),
+                                false);
+                    }
+
+                    if (config.bankType() == oneClickCustomBankTypes.Chest) {
+                        GameObject gameObject = getGameObject(config.bankID());
+                        return createMenuEntry(
+                                gameObject.getId(),
+                                MenuAction.GAME_OBJECT_FIRST_OPTION,
+                                getLocation(gameObject).getX(),
+                                getLocation(gameObject).getY(),
+                                false);
+                    }
+
+                    if (config.bankType() == oneClickCustomBankTypes.NPC) {
+                        NPC npc = getNpc(config.bankID());
+                        return createMenuEntry(
+                                npc.getIndex(),
+                                MenuAction.NPC_THIRD_OPTION,
+                                getNPCLocation(npc).getX(),
+                                getNPCLocation(npc).getY(),
+                                false);
+                    }
+                }
+            }
+        }
+
         if (config.oneClickType()==oneClickCustomTypes.Pick_Up)
         {
             if (!GroundItems.isEmpty()) {
@@ -240,7 +284,7 @@ public class oneClickCustomPlugin extends Plugin{
         if (config.oneClickType()==oneClickCustomTypes.Gather)
         {
             //System.out.println("Should be returning Gather MES");
-            GameObject customGameObject = getGameObject();
+            GameObject customGameObject = getGameObject(getConfigIds());
             return createMenuEntry(
                     customGameObject.getId(),
                     MenuAction.GAME_OBJECT_FIRST_OPTION,
@@ -249,7 +293,7 @@ public class oneClickCustomPlugin extends Plugin{
                     true);
         }
 
-        NPC customNPCObject = getNpcObject();
+        NPC customNPCObject = getNpc(getConfigIds());
 
         if(config.oneClickType()==oneClickCustomTypes.Fish)
         {
@@ -297,7 +341,6 @@ public class oneClickCustomPlugin extends Plugin{
                     true);
         }
 
-
         if(config.oneClickType()==oneClickCustomTypes.Pickpocket)
         {
             //System.out.println("Should be returning Pickpocket MES");
@@ -329,20 +372,43 @@ public class oneClickCustomPlugin extends Plugin{
         return new Point(npc.getLocalLocation().getSceneX(),npc.getLocalLocation().getSceneY());
     }
 
-    private NPC getNpcObject()
+    private NPC getNpc(List<Integer> ids)
     {
         return new NPCQuery()
-                .idEquals(getConfigIds())
+                .idEquals(ids)
                 .result(client)
                 .nearestTo(client.getLocalPlayer());
     }
 
-    private GameObject getGameObject()
+    private NPC getNpc(int... id)
     {
-        return new GameObjectQuery()
-                .idEquals(getConfigIds())
+        return new NPCQuery()
+                .idEquals(id)
                 .result(client)
                 .nearestTo(client.getLocalPlayer());
+    }
+
+    private GameObject getGameObject(List<Integer> ids)
+    {
+        return new GameObjectQuery()
+                .idEquals(ids)
+                .result(client)
+                .nearestTo(client.getLocalPlayer());
+    }
+    private GameObject getGameObject(int id)
+    {
+        return new GameObjectQuery()
+                .idEquals(id)
+                .result(client)
+                .nearestTo(client.getLocalPlayer());
+    }
+
+    private boolean bankVisible(){
+        if (config.bankType() == oneClickCustomBankTypes.Booth || config.bankType() == oneClickCustomBankTypes.Chest)
+        {
+            return getGameObject(config.bankID())!=null;
+        }
+        return getNpc(config.bankID())!=null;
     }
 
     private TileItem getNearestTileItem(List<TileItem> tileItems)
@@ -373,7 +439,6 @@ public class oneClickCustomPlugin extends Plugin{
         if (inventory == null) {
             return null;
         }
-
         return new ArrayList<>(inventory.getWidgetItems());
     }
 
@@ -406,6 +471,23 @@ public class oneClickCustomPlugin extends Plugin{
             }
         }
         return null;
+    }
+
+    public int getEmptySlots() {
+        Widget inventoryWidget = client.getWidget(WidgetInfo.INVENTORY);
+        if (inventoryWidget != null) {
+            return 28 - inventoryWidget.getWidgetItems().size();
+        } else {
+            return -1;
+        }
+    }
+
+    private boolean bankOpen() {
+        return client.getItemContainer(InventoryID.BANK) != null;
+    }
+
+    private boolean depositBoxOpen() {
+        return client.getWidget(WidgetInfo.DEPOSIT_BOX_INVENTORY_ITEMS_CONTAINER) != null;
     }
 
     public MenuEntry createMenuEntry(int identifier, MenuAction type, int param0, int param1, boolean forceLeftClick) {
