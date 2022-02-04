@@ -10,8 +10,12 @@ import net.runelite.api.queries.GameObjectQuery;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
+import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.api.MenuAction;
+import net.runelite.client.plugins.PluginManager;
+import net.runelite.client.plugins.raids.RaidsConfig;
+import net.runelite.client.plugins.raids.RaidsPlugin;
 import net.runelite.client.util.Text;
 import org.pf4j.Extension;
 import javax.inject.Inject;
@@ -27,10 +31,11 @@ import java.util.regex.Pattern;
 @Extension
 @PluginDescriptor(
 	name = "Cox Raid Scouter",
-	description = "Requires Chambers Xeric Plugin post raids to chatbox toggle to be on.",
+	description = "Read github readme for setup.",
 	tags = {"cox", "raid", "scouter"}
 )
 @Slf4j
+@PluginDependency(RaidsPlugin.class)
 public class coxraidscouter extends Plugin
 {
 	@Inject
@@ -39,10 +44,31 @@ public class coxraidscouter extends Plugin
 	@Inject
 	private coxraidscouterconfig config;
 
+	@Inject
+	private RaidsConfig coxhelperconfig;
+
+	@Inject
+	private PluginManager pluginManager;
+
+	@Inject
+	private ConfigManager configManager;
+
 	@Provides
 	coxraidscouterconfig provideConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(coxraidscouterconfig.class);
+	}
+
+	@Override
+	protected void startUp() throws Exception {
+		configManager.setConfiguration("raids","layoutMessage",true);
+		for (Plugin plugin: pluginManager.getPlugins())
+		{
+			if (plugin.getName().equals("Chambers Of Xeric"))
+			{
+				pluginManager.setPluginEnabled(plugin,true);
+			}
+		}
 	}
 
 	private int timeout = 0;
@@ -51,11 +77,6 @@ public class coxraidscouter extends Plugin
 	private boolean raidFound = false;
 	private boolean raidStarted = false;
 	private String raidLayout = null;
-
-	private int SleepDelay(int min, int max){
-		Random random = new Random();
-		return random.ints(min,(max+1)).findFirst().getAsInt();
-	}
 
 	private void reset()
 	{
