@@ -34,7 +34,10 @@ Example Blacklisted Rooms: Unknown (puzzle),Unknown (combat),Ice Demon,Vanguards
 <details>
   <summary>Change Log</summary>
   
-v0.07 -
+v0.1.0 -  
+Added automatic enabling of "Chambers Of Xeric" plugin and the layoutmessage config option  
+  
+v0.07 -  
 Added option to scout without Overload
   
 V0.06 -
@@ -63,9 +66,6 @@ Added layout to webhook (SCSPF e.g)
 Added new embed for webhook
 Added webhook message when raid is taken(user has started scouting again)
 </details>
-
-### Nex Red Click 
-Remaps ctrl click on Nex to click door outside instance 
 
 ### Object Hider
 Hides objects from the game based on ID, modified from adams Fossil Island plugin.
@@ -115,6 +115,9 @@ Initially requires the map to be loaded as a normal player would else it can get
 <details>
   <summary>Change Log</summary>  
   
+v0.1.0 -  
+Modify walking to blood altar, no longer uses chisel on rocks, thus removed manual walk option.  
+  
 v0.04 -  
 Added option to use pickaxe special attack and support for blood essence, credit Ethan Vann  
   
@@ -152,6 +155,9 @@ e.g
 
 <details>
   <summary>Change Log</summary>
+  
+v0.3 -  
+Add support for banking.   
 
 v0.1.2 -  
 Added input validation to allow for commenting.
