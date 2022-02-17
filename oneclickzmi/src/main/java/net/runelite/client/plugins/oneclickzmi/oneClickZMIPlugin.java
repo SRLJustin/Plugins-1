@@ -128,21 +128,29 @@ public class oneClickZMIPlugin extends Plugin
 	{
 		String text;
 
-		if (this.client.getLocalPlayer() == null || this.client.getGameState() != GameState.LOGGED_IN)
+		if (this.client.getLocalPlayer() == null || this.client.getGameState() != GameState.LOGGED_IN || !inVaildRegion())
 			return;
+		Widget playScreen = client.getWidget(WidgetInfo.LOGIN_CLICK_TO_PLAY_SCREEN); //Prevents OneClick menu from getting added to Welcome screen
+		if (playScreen == null)
+		{
+			if (client.getLocalPlayer().getAnimation() == 791)
+			{
+				text = "<col=00ff00>Runecrafting";
+			}
+			else
+			{
+				text = "<col=00ff00>One Click ZMI";
+			}
+			this.client.insertMenuItem(text, "", MenuAction.UNKNOWN
+					.getId(), 0, 0, 0, true);
+			//Ethan Vann the goat. Allows for left clicking anywhere when bank open instead of withdraw/deposit taking priority
+			client.setTempMenuEntry(Arrays.stream(client.getMenuEntries()).filter(x -> x.getOption().equals(text)).findFirst().orElse(null));
+		}
+	}
 
-		else if (client.getLocalPlayer().getAnimation() == 791)
-		{
-			text = "<col=00ff00>Runecrafting";
-		}
-		else
-		{
-			text = "<col=00ff00>One Click ZMI";
-		}
-		this.client.insertMenuItem(text, "", MenuAction.UNKNOWN
-				.getId(), 0, 0, 0, true);
-		//Ethan Vann the goat. Allows for left clicking anywhere when bank open instead of withdraw/deposit taking priority
-		client.setTempMenuEntry(Arrays.stream(client.getMenuEntries()).filter(x->x.getOption().equals(text)).findFirst().orElse(null));
+	private boolean inVaildRegion()
+	{
+		return false;
 	}
 
 	private void handleClick(MenuOptionClicked event)
@@ -166,7 +174,7 @@ public class oneClickZMIPlugin extends Plugin
 			return;
 		}
 
-		if ((getInventoryItem(MEDIUM_POUCH_DECAYED) != null || getInventoryItem(LARGE_POUCH_DECAYED) != null || getInventoryItem(GIANT_POUCH_DECAYED) != null) && !isBankOpen() && hasCosmicRune()) //only repairs pouch when the bank is closed naturally so not to mess with state if mid banking
+		if ((getInventoryItem(MEDIUM_POUCH_DECAYED) != null || getInventoryItem(LARGE_POUCH_DECAYED) != null || getInventoryItem(GIANT_POUCH_DECAYED) != null) && !isBankOpen() && (hasCosmicRune() || isDialogChatBoxOpen())) //only repairs pouch when the bank is closed naturally so not to mess with state if mid banking
 		{
 			log.debug("pouch_repair_state = " + pouch_repair_state);
 			switch (pouch_repair_state)
@@ -207,6 +215,7 @@ public class oneClickZMIPlugin extends Plugin
 					if (getInventoryItem(STAMINA_DOSE) != null)
 					{
 						event.setMenuEntry(drinkStamina());
+						timeout += 1; //Give the game a tick to drink the potion and apply the stamina effect
 					}
 
 					drink_stam_state = "WITHDRAW";
@@ -215,7 +224,7 @@ public class oneClickZMIPlugin extends Plugin
 			return;
 		}
 
-		if (client.getBoostedSkillLevel(Skill.HITPOINTS) < 70 && isBankOpen())
+		if (client.getBoostedSkillLevel(Skill.HITPOINTS) < config.eatAt() && isBankOpen())
 		{
 			log.debug("eat_food_state = " + eat_food_state);
 			switch (eat_food_state)
@@ -743,6 +752,13 @@ public class oneClickZMIPlugin extends Plugin
 				}
 			}
 		return false;
+	}
+
+	public boolean isDialogChatBoxOpen()
+	{
+		Widget npcDialog = client.getWidget(WidgetInfo.DIALOG_NPC_HEAD_MODEL);
+		Widget playerDialog = client.getWidget(WidgetInfo.DIALOG_PLAYER);
+		return (npcDialog != null || playerDialog != null);
 	}
 }
 

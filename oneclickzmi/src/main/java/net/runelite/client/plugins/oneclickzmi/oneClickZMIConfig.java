@@ -20,6 +20,17 @@ public interface oneClickZMIConfig extends Config{
 
     @ConfigItem(
             position = 1,
+            keyName = "eatAt",
+            name = "Eat at",
+            description = "Input the HP you want to reach before eating"
+    )
+    default int eatAt()
+    {
+        return 70;
+    }
+
+    @ConfigItem(
+            position = 2,
             keyName = "essenceType",
             name = "Essence",
             description = "Choose Daeyalt or Pure Essence"
@@ -29,7 +40,7 @@ public interface oneClickZMIConfig extends Config{
     }
 
     @ConfigItem(
-            position = 2,
+            position = 3,
             keyName = "drinkStamina",
             name = "Drink Stamina?",
             description = "Withdraws and drinks staminas if run energy below 80 or stamina not currently active"
